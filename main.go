@@ -45,7 +45,7 @@ func handle(conn net.Conn) {
 	wg.Add(2)
 
 	go read(conn, wg)
-	go write(conn.(*net.TCPConn), wg)
+	go write(conn, wg)
 	go clos(conn, wg)
 }
 
@@ -55,11 +55,14 @@ func read(conn net.Conn, wg *sync.WaitGroup) {
 	io.Copy(ioutil.Discard, conn)
 }
 
-func write(conn *net.TCPConn, wg *sync.WaitGroup) {
+func write(conn net.Conn, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fmt.Fprintf(conn, "-%s\r\n", *errmsg)
-	conn.CloseWrite()
+	for {
+		if _, err := fmt.Fprintf(conn, "-%s\r\n", *errmsg); err != nil {
+			break
+		}
+	}
 }
 
 func clos(conn net.Conn, wg *sync.WaitGroup) {
