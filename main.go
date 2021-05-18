@@ -9,10 +9,12 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 var listen = flag.String("listen", "[::]:6379", "HOST:PORT")
 var errmsg = flag.String("error", "I'm sorry, Dave. I'm afraid I can't do that.", "MESSAGE")
+var sleep = flag.Duration("sleep", time.Second, "DURATION")
 
 func main() {
 	flag.Parse()
@@ -62,6 +64,8 @@ func write(conn net.Conn, wg *sync.WaitGroup) {
 		if _, err := fmt.Fprintf(conn, "-%s\r\n", *errmsg); err != nil {
 			break
 		}
+
+		time.Sleep(*sleep)
 	}
 }
 
